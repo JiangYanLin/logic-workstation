@@ -11,8 +11,8 @@
     </div>
     <div>
       <div v-if="wellFormedUtil.trueTableShowAble()">
+        <div>原始真值表</div>
         <table class="true_table">
-          <thead>原始真值表</thead>
           <th v-for="th in wellFormedUtil.trueTable.head">{{ th }}</th>
           <tr v-for="tr in wellFormedUtil.trueTable.body">
             <td v-for="td in tr">{{ td }}</td>
@@ -23,8 +23,8 @@
         原始真值表过长，请参考以下简化的真值表：
       </div>
       <div>
+        <div>简化的真值表</div>
         <table class="true_table">
-          <thead>简化的真值表</thead>
           <th v-for="th in wellFormedUtil.simplifiedTrueTable.head">
             {{ th }}
           </th>
