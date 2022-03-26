@@ -14,14 +14,6 @@ class WellFormed {
     }
 
     set atomicPropositionOrder(value) {
-
-        //debug
-        let atomicPropositionOrder = this.getDefaultAtomicPropositionOrder();
-        atomicPropositionOrder.stringArray.forEach(v => {
-            if (value.push(v)) throw 'atomicPropositionOrder set error!';
-        })
-        //debug*/
-        this.date.atomicPropositionOrder = value;
     }
 
     inverse() {

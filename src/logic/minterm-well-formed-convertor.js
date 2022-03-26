@@ -2,14 +2,12 @@ import {AtomicProposition, Conjunction, False, Negation, True} from "@/logic/wel
 
 class MintermWellFormedConvertor {
     constructor(atomicPropositionOrder) {
+        if (atomicPropositionOrder.length === 0) throw 'Minterm convert to wellformed error!'
         this.atomicPropositionOrder = atomicPropositionOrder;
     }
 
     convertMintermToConjunction(minterm) {
         let value = minterm.value;
-        //debug
-        if (value.length < 1) throw 'minterm value error!'
-        //debug*/
         if (value === '-'.repeat(value.length)) return new False();
         if (value === '*'.repeat(value.length)) return new True();
         let conjuncts = [];

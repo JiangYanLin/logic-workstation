@@ -1,11 +1,13 @@
 <template>
   <div id="app">
     <nav>
-      <router-link to="/">Home</router-link>
+      <router-link to="/">逻辑公式化简与真值表</router-link>
       |
-      <router-link to="/about">About</router-link>
+      <router-link to="/about">使用说明</router-link>
     </nav>
-    <router-view/>
+    <keep-alive>
+      <router-view/>
+    </keep-alive>
   </div>
 </template>
 
@@ -27,10 +29,6 @@ nav a {
   color: #2c3e50;
 }
 
-nav a.router-link-exact-active {
-  color: #42b983;
-}
 </style>
 <script>
-import {WellFormedSimplifier} from "@/logic/well-formed-simplifier";
 </script>

@@ -1,3 +1,5 @@
+import {Coverage} from "@/logic/coverage";
+
 class Minterm {
     constructor(v = undefined) {
         if (v !== undefined) {
@@ -100,12 +102,59 @@ class Minterm {
         result.value = resultValue;
         return result;
     }
+
+    cost(forConjunction = false) {
+        let _cost = -1;
+        for (let i = 0; i < this.value.length; i++) {
+            switch (this.value[i]) {
+                case '0':
+                    _cost += forConjunction ? 1 : 2;
+                    break;
+                case '1':
+                    _cost += forConjunction ? 2 : 1;
+                    break
+                default:
+            }
+        }
+        return _cost;
+    }
+
+    negate() {
+        let len = this.value.length;
+        if (this.isFALSE()) return new Minterm('*'.repeat(len));
+        if (this.value === '-'.repeat(len)) return new Minterm('-'.repeat(len))
+        let result = new Coverage();
+        for (let i = 0; i < len; i++) {
+            switch (this.value[i]) {
+                case '*':
+                    break;
+                case '0': {
+                    let valueArray = this.value.split('');
+                    valueArray[i] = '1';
+                    let newValue = valueArray.join('');
+                    result.push(new Minterm(newValue));
+                    break;
+                }
+                case '1': {
+                    let valueArray = this.value.split('');
+                    valueArray[i] = '0';
+                    let newValue = valueArray.join('');
+                    result.push(new Minterm(newValue));
+                    break;
+                }
+
+            }
+        }
+        return result;
+    }
+
 }
 
 
 export {
     Minterm
 }
+
 
 /*test conjunct
 let m1 = new Minterm();
@@ -126,3 +175,12 @@ let x, y;
 [x, y] = ['10*1', '11*1'];
 console.log(x, y, new Minterm(x).combineSub(new Minterm(y)).value);
 //test combineSub*/
+
+/*test cost
+let x = new Minterm('---');
+console.log(x.cost());
+//test cost*/
+
+//test negate
+// console.log(new Minterm('10**0').negate());
+//test negate*/

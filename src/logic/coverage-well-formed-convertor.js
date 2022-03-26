@@ -1,4 +1,4 @@
-import {Disjunction, False} from "@/logic/well-formed";
+import {Disjunction} from "@/logic/well-formed";
 
 class CoverageWellFormedConvertor {
     constructor(mintermWellFormedConvertor) {
@@ -6,7 +6,7 @@ class CoverageWellFormedConvertor {
     }
 
     convertCoverageToDisjunction(coverage) {
-        if (coverage.length === 0) return new False();
+        if (coverage.length === 0) throw 'convertCoverageToDisjunction error';
         if (coverage.length === 1) return this.mintermWellFormedConvertor.convertMintermToConjunction(coverage.mintermArray[0]);
         let disjunctive = [];
         coverage.mintermArray.forEach((minterm) => {

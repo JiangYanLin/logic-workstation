@@ -1,3 +1,6 @@
+import {CoveragesChooser} from "@/logic/CoveragesChooser";
+import {Minterm} from "@/logic/minterm";
+
 class Coverage {
     mintermValueSet = new Set();
     mintermArray = [];
@@ -16,6 +19,9 @@ class Coverage {
     }
 
     disjunct(coverage) {
+        //debug
+        if (this.length === 0 || coverage.length === 0) throw 'coverage disjunct param error!';
+        //debug*/
         let result = new Coverage();
         this.mintermArray.forEach(v => result.push(v));
         coverage.mintermArray.forEach(v => result.push(v));
@@ -23,12 +29,12 @@ class Coverage {
     }
 
     conjunct(coverage) {
+        //debug
+        if (this.length === 0 || coverage.length === 0) throw 'coverage conjunct param error!';
+        //debug*/
         let result = new Coverage();
         this.mintermArray.forEach(minterm1 => {
             coverage.mintermArray.forEach(minterm2 => {
-                /*debug
-                console.log(minterm1.value, 'conjuct', minterm2.value, minterm1.conjunct(minterm2))
-                //debug*/
                 result.push(minterm1.conjunct(minterm2));
             });
         });
@@ -49,18 +55,8 @@ class Coverage {
         coverage.mintermArray.forEach(v => this.delete(v));
     }
 
-    conjunctPairwise() {
-        let result = new Coverage();
-        let length = this.length;
-        for (let i = 0; i < length; i++) {
-            for (let j = i + 1; j < length; j++) {
-                result.push(this.mintermArray[i].conjunct(this.mintermArray[j]));
-            }
-        }
-        return result;
-    }
-
     fullLargestCoverage() {
+        if (this.length === 0) return this;
         let result = new Coverage();
         let startIndexes = [];
         let length = this.length;
@@ -71,23 +67,21 @@ class Coverage {
         let toDelete = new Coverage();
         let i = 0;
         do {
-            /*debug
-            console.log(i);
-            debugger;
-            //debug*/
             let minterm_i = result.mintermArray[i];
             for (let j = startIndexes[i]; j < length; j++) {
                 let minterm_j = result.mintermArray[j];
                 let combineSub = minterm_i.combineSub(minterm_j);
-                if (combineSub !== null && result.push(combineSub)) {
+                if (combineSub !== null) {
                     if (combineSub.conjunct(minterm_i).equals(minterm_i)) {
                         toDelete.push(minterm_i);
                     }
                     if (combineSub.conjunct(minterm_j).equals(minterm_j)) {
                         toDelete.push(minterm_j);
                     }
-                    startIndexes[i]++;
-                    startIndexes.push(result.length);
+                    if (result.push(combineSub)) {
+                        startIndexes[i]++;
+                        startIndexes.push(result.length);
+                    }
                 }
                 startIndexes[i]++;
             }
@@ -97,12 +91,113 @@ class Coverage {
         return result;
     }
 
-    simplify() {
+    isIntersectedWith(coverage) {
+        for (let i = 0; i < this.mintermArray.length; i++) {
+            for (let j = 0; j < coverage.mintermArray.length; j++) {
+                if (this.mintermArray[i].equals(coverage.mintermArray[j])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    cost(forConjuncion = false) {
+        let _cost = this.length - 1;
+        this.mintermArray.forEach((minterm) => {
+            _cost += minterm.cost(forConjuncion);
+        });
+        return _cost;
+    }
+
+    simplify(forConjunctive = false) {
         let result = this.fullLargestCoverage();
-        result.deleteAll(result.conjunctPairwise().fullLargestCoverage());
+        let conjunctPairwise = new ConjunctPairwise(result);
+        result.deleteAll(conjunctPairwise.getLargestMultiOccupiedCoverage());
+        conjunctPairwise.deleteAllEntriesWhichValuesIntersectedWith(result);
+        if (conjunctPairwise.size === 0) {
+            return result;
+        } else if (result.length === 0) {
+            return conjunctPairwise.minimalCoverage(forConjunctive);
+        } else {
+            return result.disjunct(conjunctPairwise.minimalCoverage(forConjunctive));
+        }
+    }
+}
+
+class ConjunctPairwise extends Map {
+    constructor(coverage) {
+        super();
+        if (!(coverage instanceof Coverage) || coverage.length === 0 || coverage.length === undefined) {
+            throw  'ConjunctPairwise init error'
+        }
+        this.mintermLength = coverage.mintermArray[0].value.length;
+        this.coverageMultiOccupied = new Coverage();
+        let mintermArray = coverage.mintermArray;
+        for (let i = 0; i < mintermArray.length; i++) {
+            let minterm_i = mintermArray[i];
+            for (let j = i + 1; j < mintermArray.length; j++) {
+                let minterm_j = mintermArray[j];
+                let mintermMultiOccupied = minterm_i.conjunct(minterm_j);
+                let key = mintermMultiOccupied.value;
+                this.coverageMultiOccupied.push(mintermMultiOccupied);
+                if (this.get(key) === undefined) {
+                    this.set(key, new Coverage());
+                }
+                let coverage = this.get(key);
+                coverage.push(minterm_i);
+                coverage.push(minterm_j);
+            }
+        }
+    }
+
+    getLargestMultiOccupiedCoverage() {
+        return this.coverageMultiOccupied.fullLargestCoverage();
+    }
+
+
+    delete(mintermMultiOccupied) {
+        super.delete(mintermMultiOccupied.value);
+        this.coverageMultiOccupied.delete(mintermMultiOccupied);
+    }
+
+    deleteAllEntriesWhichValuesIntersectedWith(coverage) {
+        let toDelete = new Set();
+        this.forEach((value, mintermMultiOccupied) => {
+            if (value.isIntersectedWith(coverage)) {
+                toDelete.add(mintermMultiOccupied);
+            }
+        });
+        toDelete.forEach(v => {
+            this.delete(new Minterm(v));
+        });
+        this.delete(new Minterm('-'.repeat(this.mintermLength)));
+    }
+
+    minimalCoverage(forConjunction = false) {
+        let param = [];
+        this.forEach(coverage => {
+            param.push(coverage);
+        });
+        let _cost = Number.MAX_SAFE_INTEGER;
+        let result = undefined;
+        let chooser = new CoveragesChooser(param);
+        if (chooser.total < 2 ** 12) {
+            while (chooser.hasNext()) {
+                let candidateCoverage = chooser.next();
+                let cost = candidateCoverage.cost(forConjunction);
+                if (cost < _cost) {
+                    _cost = cost;
+                    result = candidateCoverage;
+                }
+            }
+        } else {
+            throw '算力不足！'
+        }
         return result;
     }
 }
+
 
 export {
     Coverage

@@ -10,9 +10,9 @@
 ")"|"）"                                                        return ')';
 ("-"|"="|">")+?">"|"→"                                          return yytext='→';
 "iff"|"<"("-"|"=")?">"|"↔"                                      return yytext='↔';
-([aA][nN][dD])|("&"+)|"∧"                                       return yytext='∧';
-([oO][rR])|("|"+)|"∨"                                           return yytext='∨';
-([nN][oO][tT])|"!"|"！"|"﹁"                                     return yytext='﹁';
+([aA][nN][dD])|("&"+)|"∧"|"∧"                                     return yytext='∧';
+([oO][rR])|("|"+)|"∨"                                          return yytext='∨';
+([nN][oO][tT])|"!"|"！"|"﹁"|"¬"                                    return yytext='﹁';
 (\w|[\u4e00-\u9fa5]|";"|"；")+                                   return 'identifier';
 /lex
 
@@ -25,7 +25,7 @@
 %left ')' ']'
 
 %{
-    import {True, False, AtomicProposition, Negation, Conjunction, Disjunction, IFF, Implication} from '@/logic/formula/well-formed';
+        //import {True, False, AtomicProposition, Negation, Conjunction, Disjunction, IFF, Implication} from '@/logic/well-formed';
 %}
 
 %%
