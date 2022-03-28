@@ -63,6 +63,7 @@ class SimplifiedTrueTable extends TrueTableShowable {
         try {
             let simplifiedDisjunction = this.wellFormedSimplifier.simplifyDisjunctive();
             if (simplifiedDisjunction instanceof True) {
+                this.head = [this.wellFormed.toString()];
                 this.body.push(['1']);
                 return this;
             }
@@ -108,6 +109,7 @@ class SimplifiedTrueTable extends TrueTableShowable {
         try {
             let simplifiedConjunction = this.wellFormedSimplifier.simplifyConjunctive();
             if (simplifiedConjunction instanceof True) {
+                this.head = [this.wellFormed.toString()];
                 this.body.push(['1']);
                 return this;
             }
